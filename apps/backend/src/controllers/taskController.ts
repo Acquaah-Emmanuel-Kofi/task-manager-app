@@ -5,6 +5,7 @@ import {
   getTaskById,
   updateTask,
   deleteTask,
+  getTasksByFilter,
 } from "../models/taskModel";
 import {
   createTaskSchema,
@@ -26,18 +27,18 @@ export const handleCreateTask = async (
   }
 };
 
-export const handleGetTasks = async (
-  _req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const tasks = await getAllTasks();
-    res.json(tasks);
-  } catch (err) {
-    next(err);
-  }
-};
+// export const handleGetTasks = async (
+//   _req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   try {
+//     const tasks = await getAllTasks();
+//     res.json(tasks);
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
 export const handleGetTask = async (
   req: Request,
@@ -51,6 +52,25 @@ export const handleGetTask = async (
     if (!task) res.status(404).json({ error: "Task not found" });
 
     res.json(task);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const handleGetTasks = async (
+  req: Request,
+  res: Response,
+  next: any
+) => {
+  try {
+    const { status, priority } = req.query;
+
+    const tasks = await getTasksByFilter({
+      status: status as string,
+      priority: priority as string,
+    });
+
+    res.json(tasks);
   } catch (err) {
     next(err);
   }

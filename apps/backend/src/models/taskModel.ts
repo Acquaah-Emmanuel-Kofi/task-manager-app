@@ -54,3 +54,28 @@ export const deleteTask = async (id: number) => {
   );
   return result.rows[0];
 };
+
+export const getTasksByFilter = async (filters: {
+  status?: string;
+  priority?: string;
+}) => {
+  const conditions: string[] = [];
+  const values: any[] = [];
+
+  if (filters.status) {
+    conditions.push(`status = $${values.length + 1}`);
+    values.push(filters.status);
+  }
+
+  if (filters.priority) {
+    conditions.push(`priority = $${values.length + 1}`);
+    values.push(filters.priority);
+  }
+
+  const where =
+    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  const query = `SELECT * FROM tasks ${where} ORDER BY created_at DESC`;
+
+  const result = await pool.query(query, values);
+  return result.rows;
+};
