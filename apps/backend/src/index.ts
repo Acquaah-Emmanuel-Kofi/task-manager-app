@@ -2,6 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import userRoutes from "./routes/userRoutes";
+import taskRoutes from "./routes/taskRoutes";
 
 dotenv.config();
 
@@ -16,8 +17,8 @@ app.use(cors());
 app.get("/", (_req, res) => {
   res.send("Task Manager API is running");
 });
-
 app.use("/api", userRoutes);
+app.use("/api", taskRoutes);
 
 // Server running
 app.listen(port, () => {
