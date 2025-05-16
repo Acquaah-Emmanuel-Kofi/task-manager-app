@@ -4,6 +4,7 @@ import cors from "cors";
 import userRoutes from "./routes/userRoutes";
 import taskRoutes from "./routes/taskRoutes";
 import morgan from "morgan";
+import { errorHandler } from "./middlewares/errorHandler";
 
 dotenv.config();
 
@@ -21,6 +22,8 @@ app.get("/", (_req, res) => {
 });
 app.use("/api", userRoutes);
 app.use("/api", taskRoutes);
+
+app.use(errorHandler);
 
 // Server running
 app.listen(port, () => {

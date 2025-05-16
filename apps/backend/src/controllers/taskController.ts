@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import {
   createTask,
   getAllTasks,
@@ -12,47 +12,83 @@ import {
 } from "../validators/taskValidator";
 import { ITask } from "../interfaces/tasksInterface";
 
-export const handleCreateTask = async (req: Request<ITask>, res: Response) => {
+export const handleCreateTask = async (
+  req: Request<ITask>,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const data = createTaskSchema.parse(req.body);
     const task = await createTask(data);
     res.status(201).json(task);
   } catch (err) {
-    res.status(400).json({ error: err instanceof Error ? err.message : err });
+    next(err);
   }
 };
 
-export const handleGetTasks = async (_req: Request, res: Response) => {
-  const tasks = await getAllTasks();
-  res.json(tasks);
-};
-
-export const handleGetTask = async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const task = await getTaskById(id);
-
-  if (!task) res.status(404).json({ error: "Task not found" });
-
-  res.json(task);
-};
-
-export const handleUpdateTask = async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const updates = updateTaskSchema.parse(req.body);
-  const task = await updateTask(id, updates);
-
-  if (!task) {
-    res.status(404).json({ error: "Task not found or no updates applied" });
+export const handleGetTasks = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const tasks = await getAllTasks();
+    res.json(tasks);
+  } catch (err) {
+    next(err);
   }
-
-  res.json(task);
 };
 
-export const handleDeleteTask = async (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const task = await deleteTask(id);
+export const handleGetTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = Number(req.params.id);
+    const task = await getTaskById(id);
 
-  if (!task) res.status(404).json({ error: "Task not found" });
+    if (!task) res.status(404).json({ error: "Task not found" });
 
-  res.json({ message: "Task deleted successfully" });
+    res.json(task);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const handleUpdateTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = Number(req.params.id);
+    const updates = updateTaskSchema.parse(req.body);
+    const task = await updateTask(id, updates);
+
+    if (!task) {
+      res.status(404).json({ error: "Task not found or no updates applied" });
+    }
+
+    res.json(task);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const handleDeleteTask = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const id = Number(req.params.id);
+    const task = await deleteTask(id);
+
+    if (!task) res.status(404).json({ error: "Task not found" });
+
+    res.json({ message: "Task deleted successfully" });
+  } catch (err) {
+    next(err);
+  }
 };
