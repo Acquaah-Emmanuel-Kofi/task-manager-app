@@ -7,6 +7,7 @@ import {
   deleteTask,
   getTasksByFilter,
   getTaskCount,
+  markOverdueTasks,
 } from "../models/taskModel";
 import {
   createTaskSchema,
@@ -67,8 +68,9 @@ export const handleGetAllTasks = async (
   next: NextFunction
 ) => {
   try {
-    const userId = (req as any).user.userId;
+    await markOverdueTasks();
 
+    const userId = (req as any).user.userId;
     const validated = taskQuerySchema.parse(req.query);
 
     const page = validated.page ?? 1;

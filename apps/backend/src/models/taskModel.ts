@@ -117,3 +117,15 @@ export const getTaskCount = async (
   const result = await pool.query(query, values);
   return parseInt(result.rows[0].count, 10);
 };
+
+export const markOverdueTasks = async () => {
+  const result = await pool.query(`
+      UPDATE tasks
+      SET status = 'expired'
+      WHERE due_date < NOW()
+        AND status IN ('pending', 'in-progress')
+        RETURNING id;
+    `);
+
+  return result.rowCount;
+};
