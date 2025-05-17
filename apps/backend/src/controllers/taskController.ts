@@ -6,16 +6,14 @@ import {
   updateTask,
   deleteTask,
   getTasksByFilter,
+  getTaskCount,
 } from "../models/taskModel";
 import {
   createTaskSchema,
   updateTaskSchema,
 } from "../validators/taskValidator";
-import {
-  ITask,
-  ITaskPriority,
-  ITaskStatus,
-} from "../interfaces/tasksInterface";
+import { ITask } from "../interfaces/tasksInterface";
+import { taskQuerySchema } from "../schemas/taskQuerySchema";
 
 export const handleCreateTask = async (
   req: Request<ITask>,
@@ -67,18 +65,27 @@ export const handleGetTasks = async (
   next: NextFunction
 ) => {
   try {
-    const { status, priority, limit, offset, sort, order } = req.query;
+    const validated = taskQuerySchema.parse(req.query);
 
-    const tasks = await getTasksByFilter({
-      status: status as ITaskStatus,
-      priority: priority as ITaskPriority,
-      limit: limit != null ? parseInt(limit as string, 10) : undefined,
-      offset: offset != null ? parseInt(offset as string, 10) : undefined,
-      sort: sort as string,
-      order: order as "asc" | "desc",
+    const limit = validated.limit ?? 10;
+    const offset = validated.offset ?? 0;
+    const page = Math.floor(offset / limit) + 1;
+
+    const [tasks, total] = await Promise.all([
+      getTasksByFilter(validated),
+      getTaskCount(validated),
+    ]);
+
+    res.json({
+      meta: {
+        total,
+        page,
+        limit,
+        next: offset + limit < total ? page + 1 : null,
+        previous: offset > 0 ? page - 1 : null,
+      },
+      data: tasks,
     });
-
-    res.json(tasks);
   } catch (err) {
     next(err);
   }
