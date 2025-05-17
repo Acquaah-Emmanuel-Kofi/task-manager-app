@@ -5,6 +5,7 @@ import userRoutes from "./routes/userRoutes";
 import taskRoutes from "./routes/taskRoutes";
 import morgan from "morgan";
 import { errorHandler } from "./middlewares/errorHandler";
+import authRoutes from "./routes/authRoutes";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(morgan("dev"));
 app.get("/", (_req, res) => {
   res.send("Task Manager API is running");
 });
+app.use("/api/auth", authRoutes);
 app.use("/api", userRoutes);
 app.use("/api", taskRoutes);
 
