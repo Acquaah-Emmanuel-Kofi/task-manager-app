@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { useTasks } from "@/hooks/useTasks";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const taskSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -70,7 +71,9 @@ export default function DashboardPage() {
       reset();
       setOpen(false);
       router.refresh();
-      alert("Task created successfully!");
+      toast("Success", {
+        description: "Task created successfully!",
+      });
     } catch (err) {
       console.error(err);
     }

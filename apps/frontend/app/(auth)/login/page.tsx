@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { hanldeApiError } from "@/lib/utils";
 import { Icons } from "@/lib/icons";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const registerSchema = z.object({
   email: z.string().min(1, "Email is required"),
@@ -42,7 +43,9 @@ export default function LoginPage() {
       setIsLoading(true);
       const { data } = await api.post("/auth/login", values);
 
-      alert("Login successful");
+      toast("Success", {
+        description: "Login successful!",
+      });
       Cookies.set("token", data.token);
       router.push("/dashboard");
     } catch (err: unknown) {
