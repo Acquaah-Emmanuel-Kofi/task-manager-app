@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layouts/navbar";
+import { AuthProvider } from "@/context/AuthContext";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -50,7 +51,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Navbar />
-        <main className="p-4 max-w-3xl mx-auto">{children}</main>
+
+        <main className="p-4 max-w-3xl mx-auto">
+          <AuthProvider>{children}</AuthProvider>
+        </main>
       </body>
     </html>
   );
