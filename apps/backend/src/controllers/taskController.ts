@@ -1,5 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import {
+  createTaskSchema,
+  updateTaskSchema,
+} from "../validators/taskValidator";
+import { taskQuerySchema } from "../schemas/taskQuerySchema";
+import {
   createTask,
   getAllTasks,
   getTaskById,
@@ -8,12 +13,7 @@ import {
   getTasksByFilter,
   getTaskCount,
   markOverdueTasks,
-} from "../models/taskModel";
-import {
-  createTaskSchema,
-  updateTaskSchema,
-} from "../validators/taskValidator";
-import { taskQuerySchema } from "../schemas/taskQuerySchema";
+} from "../services/taskService";
 
 export const handleCreateTask = async (
   req: Request,

@@ -1,5 +1,5 @@
 import pool from "../config/db";
-import { ITask, ITaskFilters } from "../interfaces/tasksInterface";
+import { ITask, ITaskFilters } from "../models/tasksModel";
 
 export const createTask = async (task: ITask, userId: number) => {
   const result = await pool.query(

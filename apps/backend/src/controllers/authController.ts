@@ -1,8 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
 import { registerSchema, loginSchema } from "../schemas/authSchema";
-import { findUserByEmail, createUserWithPassword } from "../models/authModel";
 import { generateToken } from "../utils/jwt";
+import {
+  createUserWithPassword,
+  findUserByEmail,
+} from "../services/authService";
 
 export const handleRegister = async (
   req: Request,

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { createUserSchema } from "../validators/userValidator";
-import { createUser, getAllUsers, getUserById } from "../models/userModel";
+import { createUser, getAllUsers, getUserById } from "../services/userService";
 
 export const handleCreateUser = async (
   req: Request,
