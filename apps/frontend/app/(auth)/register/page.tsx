@@ -13,6 +13,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import api from "@/lib/axios";
+import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
+import { hanldeApiError } from "@/lib/utils";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -30,9 +34,18 @@ export default function RegisterPage() {
     },
   });
 
+  const router = useRouter();
+
   const onSubmit = async (values: z.infer<typeof registerSchema>) => {
-    console.log("Registering user:", values);
-    // TODO: POST to your backend /api/register
+    try {
+      const { data } = await api.post("/auth/register", values);
+
+      alert("Registration successful");
+      Cookies.set("token", data.token);
+      router.push("/dashboard");
+    } catch (err: unknown) {
+      hanldeApiError(err);
+    }
   };
 
   return (
@@ -79,7 +92,7 @@ export default function RegisterPage() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full cursor-pointer">
             Register
           </Button>
         </form>
