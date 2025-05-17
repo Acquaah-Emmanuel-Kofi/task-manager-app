@@ -95,3 +95,26 @@ export const getTasksByFilter = async (filters: {
   const result = await pool.query(query, values);
   return result.rows;
 };
+
+export const getTaskCount = async (filters: {
+  status?: string;
+  priority?: string;
+}) => {
+  const conditions: string[] = [];
+  const values: any[] = [];
+
+  if (filters.status) {
+    conditions.push(`status = $${values.length + 1}`);
+    values.push(filters.status);
+  }
+
+  if (filters.priority) {
+    conditions.push(`priority = $${values.length + 1}`);
+    values.push(filters.priority);
+  }
+
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const query = `SELECT COUNT(*) FROM tasks ${where}`;
+  const result = await pool.query(query, values);
+  return parseInt(result.rows[0].count, 10);
+};
