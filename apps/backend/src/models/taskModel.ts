@@ -58,6 +58,10 @@ export const deleteTask = async (id: number) => {
 export const getTasksByFilter = async (filters: {
   status?: string;
   priority?: string;
+  limit?: number;
+  offset?: number;
+  sort?: string;
+  order?: "asc" | "desc";
 }) => {
   const conditions: string[] = [];
   const values: any[] = [];
@@ -72,9 +76,21 @@ export const getTasksByFilter = async (filters: {
     values.push(filters.priority);
   }
 
-  const where =
-    conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-  const query = `SELECT * FROM tasks ${where} ORDER BY created_at DESC`;
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const sortBy = filters.sort ?? "created_at";
+  const sortOrder = filters.order?.toLowerCase() === "asc" ? "ASC" : "DESC";
+  const limit = filters.limit ?? 10;
+  const offset = filters.offset ?? 0;
+
+  const query = `
+      SELECT * FROM tasks
+      ${where}
+      ORDER BY ${sortBy} ${sortOrder}
+      LIMIT $${values.length + 1}
+      OFFSET $${values.length + 2}
+    `;
+
+  values.push(limit, offset);
 
   const result = await pool.query(query, values);
   return result.rows;

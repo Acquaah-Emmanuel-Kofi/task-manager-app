@@ -11,7 +11,11 @@ import {
   createTaskSchema,
   updateTaskSchema,
 } from "../validators/taskValidator";
-import { ITask } from "../interfaces/tasksInterface";
+import {
+  ITask,
+  ITaskPriority,
+  ITaskStatus,
+} from "../interfaces/tasksInterface";
 
 export const handleCreateTask = async (
   req: Request<ITask>,
@@ -60,14 +64,18 @@ export const handleGetTask = async (
 export const handleGetTasks = async (
   req: Request,
   res: Response,
-  next: any
+  next: NextFunction
 ) => {
   try {
-    const { status, priority } = req.query;
+    const { status, priority, limit, offset, sort, order } = req.query;
 
     const tasks = await getTasksByFilter({
-      status: status as string,
-      priority: priority as string,
+      status: status as ITaskStatus,
+      priority: priority as ITaskPriority,
+      limit: limit != null ? parseInt(limit as string, 10) : undefined,
+      offset: offset != null ? parseInt(offset as string, 10) : undefined,
+      sort: sort as string,
+      order: order as "asc" | "desc",
     });
 
     res.json(tasks);
