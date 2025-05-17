@@ -17,9 +17,10 @@ import api from "@/lib/axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { hanldeApiError } from "@/lib/utils";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { Icons } from "@/lib/icons";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -30,6 +31,7 @@ const registerSchema = z.object({
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
+  const { isAuthenticated, loading } = useAuth();
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -39,6 +41,14 @@ export default function RegisterPage() {
       password: "",
     },
   });
+
+  useLayoutEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [loading, isAuthenticated, router]);
+
+  if (loading) return null;
 
   const onSubmit = async (values: z.infer<typeof registerSchema>) => {
     try {

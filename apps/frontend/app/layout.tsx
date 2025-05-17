@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navbar } from "@/components/layouts/navbar";
 import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/theme-provider";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -49,15 +50,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <Navbar />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            <Navbar />
 
-        <main className="p-4 max-w-3xl mx-auto">
-          <AuthProvider>{children}</AuthProvider>
-        </main>
+            <main className="p-4 max-w-3xl mx-auto">{children}</main>
 
-        <Toaster />
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

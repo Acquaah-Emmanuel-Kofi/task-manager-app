@@ -1,7 +1,6 @@
 "use client";
 
 import api from "@/lib/axios";
-import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -86,7 +85,9 @@ export default function DashboardPage() {
         <div className="flex gap-2">
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button>+ New Task</Button>
+              <Button type="button" className="cursor-pointer">
+                + New Task
+              </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
@@ -173,15 +174,6 @@ export default function DashboardPage() {
               </form>
             </DialogContent>
           </Dialog>
-          <Button
-            variant="outline"
-            onClick={() => {
-              Cookies.remove("token");
-              router.push("/login");
-            }}
-          >
-            Logout
-          </Button>
         </div>
       </div>
 
