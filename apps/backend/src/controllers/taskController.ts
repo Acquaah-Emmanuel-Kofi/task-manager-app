@@ -1,5 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import {
+  createTaskSchema,
+  updateTaskSchema,
+} from "../validators/taskValidator";
+import { taskQuerySchema } from "../schemas/taskQuerySchema";
+import {
   createTask,
   getAllTasks,
   getTaskById,
@@ -7,22 +12,20 @@ import {
   deleteTask,
   getTasksByFilter,
   getTaskCount,
-} from "../models/taskModel";
-import {
-  createTaskSchema,
-  updateTaskSchema,
-} from "../validators/taskValidator";
-import { ITask } from "../interfaces/tasksInterface";
-import { taskQuerySchema } from "../schemas/taskQuerySchema";
+  markOverdueTasks,
+} from "../services/taskService";
 
 export const handleCreateTask = async (
-  req: Request<ITask>,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const data = createTaskSchema.parse(req.body);
-    const task = await createTask(data);
+    const validatedPayload = createTaskSchema.parse(req.body);
+    const userId = (req as any).user.userId;
+
+    const task = await createTask(validatedPayload, userId);
+
     res.status(201).json(task);
   } catch (err) {
     next(err);
@@ -59,30 +62,34 @@ export const handleGetTask = async (
   }
 };
 
-export const handleGetTasks = async (
+export const handleGetAllTasks = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
+    await markOverdueTasks();
+
+    const userId = (req as any).user.userId;
     const validated = taskQuerySchema.parse(req.query);
 
+    const page = validated.page ?? 1;
     const limit = validated.limit ?? 10;
-    const offset = validated.offset ?? 0;
-    const page = Math.floor(offset / limit) + 1;
+    const offset = (page - 1) * limit;
 
     const [tasks, total] = await Promise.all([
-      getTasksByFilter(validated),
-      getTaskCount(validated),
+      getTasksByFilter({ ...validated, limit, offset }, userId),
+      getTaskCount(validated, userId),
     ]);
+
+    const totalPages = Math.ceil(total / limit);
 
     res.json({
       meta: {
         total,
         page,
-        limit,
-        next: offset + limit < total ? page + 1 : null,
-        previous: offset > 0 ? page - 1 : null,
+        next: page < totalPages ? page + 1 : null,
+        previous: page > 1 ? page - 1 : null,
       },
       data: tasks,
     });
@@ -97,15 +104,20 @@ export const handleUpdateTask = async (
   next: NextFunction
 ) => {
   try {
-    const id = Number(req.params.id);
-    const updates = updateTaskSchema.parse(req.body);
-    const task = await updateTask(id, updates);
+    const id = parseInt(req.params.id);
+    const userId = (req as any).user.userId;
 
-    if (!task) {
-      res.status(404).json({ error: "Task not found or no updates applied" });
+    const task = await getTaskById(id);
+
+    if (!task) res.status(404).json({ message: "Task not found" });
+
+    if (task.user_id !== userId) {
+      res.status(403).json({ message: "Not authorized" });
     }
 
-    res.json(task);
+    const validated = updateTaskSchema.parse(req.body);
+    const updated = await updateTask(id, validated);
+    res.json(updated);
   } catch (err) {
     next(err);
   }
@@ -117,12 +129,19 @@ export const handleDeleteTask = async (
   next: NextFunction
 ) => {
   try {
-    const id = Number(req.params.id);
-    const task = await deleteTask(id);
+    const id = parseInt(req.params.id);
+    const userId = (req as any).user.userId;
 
-    if (!task) res.status(404).json({ error: "Task not found" });
+    const task = await getTaskById(id);
 
-    res.json({ message: "Task deleted successfully" });
+    if (!task) res.status(404).json({ message: "Task not found" });
+
+    if (task.user_id !== userId) {
+      res.status(403).json({ message: "Not authorized" });
+    }
+
+    await deleteTask(id);
+    res.status(204).send();
   } catch (err) {
     next(err);
   }

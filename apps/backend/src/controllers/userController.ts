@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { createUserSchema } from "../validators/userValidator";
-import { createUser, getAllUsers, getUserById } from "../models/userModel";
+import { createUser, getAllUsers, getUserById } from "../services/userService";
 
 export const handleCreateUser = async (
   req: Request,
@@ -9,7 +9,11 @@ export const handleCreateUser = async (
 ) => {
   try {
     const validated = createUserSchema.parse(req.body);
-    const user = await createUser(validated.name, validated.email);
+    const user = await createUser(
+      validated.name,
+      validated.email,
+      validated.password
+    );
     res.status(201).json(user);
   } catch (err) {
     next(err);
