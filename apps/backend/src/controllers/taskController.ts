@@ -24,7 +24,7 @@ export const handleCreateTask = async (
     const validatedPayload = createTaskSchema.parse(req.body);
     const userId = (req as any).user.userId;
 
-    const task = await createTask(validatedPayload, userId);
+    const task = await createTask({ ...validatedPayload, user_id: userId });
 
     res.status(201).json(task);
   } catch (err) {
