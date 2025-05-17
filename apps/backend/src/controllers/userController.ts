@@ -9,7 +9,11 @@ export const handleCreateUser = async (
 ) => {
   try {
     const validated = createUserSchema.parse(req.body);
-    const user = await createUser(validated.name, validated.email);
+    const user = await createUser(
+      validated.name,
+      validated.email,
+      validated.password
+    );
     res.status(201).json(user);
   } catch (err) {
     next(err);
