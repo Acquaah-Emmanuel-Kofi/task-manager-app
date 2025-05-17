@@ -22,8 +22,8 @@ app.get("/", (_req, res) => {
   res.send("Task Manager API is running");
 });
 app.use("/api/auth", authRoutes);
-app.use("/api", userRoutes);
-app.use("/api", taskRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/tasks", taskRoutes);
 
 app.use(errorHandler);
 

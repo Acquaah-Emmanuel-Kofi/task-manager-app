@@ -9,3 +9,13 @@ export interface ITask {
   status?: ITaskStatus;
   priority?: ITaskPriority;
 }
+
+export interface ITaskFilters {
+  status?: string;
+  priority?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+  sort?: string;
+  order?: "asc" | "desc";
+}

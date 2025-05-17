@@ -7,8 +7,8 @@ import {
 
 const userRoutes = Router();
 
-userRoutes.post("/users", handleCreateUser);
-userRoutes.get("/users", handleGetAllUsers);
-userRoutes.get("/users/:id", handleGetUser);
+userRoutes.post("/", handleCreateUser);
+userRoutes.get("/", handleGetAllUsers);
+userRoutes.get("/:id", handleGetUser);
 
 export default userRoutes;

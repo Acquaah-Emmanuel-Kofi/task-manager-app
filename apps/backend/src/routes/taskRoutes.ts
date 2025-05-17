@@ -1,18 +1,22 @@
 import { Router } from "express";
 import {
   handleCreateTask,
-  handleGetTasks,
   handleGetTask,
   handleUpdateTask,
   handleDeleteTask,
+  handleGetAllTasks,
 } from "../controllers/taskController";
+import { authenticate } from "../middlewares/authMiddleware";
 
 const taskRoutes = Router();
 
-taskRoutes.post("/tasks", handleCreateTask);
-taskRoutes.get("/tasks", handleGetTasks);
-taskRoutes.get("/tasks/:id", handleGetTask);
-taskRoutes.put("/tasks/:id", handleUpdateTask);
-taskRoutes.delete("/tasks/:id", handleDeleteTask);
+// All routes require authentication
+taskRoutes.use(authenticate);
+
+taskRoutes.post("/", handleCreateTask);
+taskRoutes.get("/", handleGetAllTasks);
+taskRoutes.get("/:id", handleGetTask);
+taskRoutes.put("/:id", handleUpdateTask);
+taskRoutes.delete("/:id", handleDeleteTask);
 
 export default taskRoutes;

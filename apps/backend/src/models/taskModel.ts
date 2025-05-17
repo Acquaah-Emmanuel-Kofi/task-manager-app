@@ -1,18 +1,11 @@
 import pool from "../config/db";
-import { ITask } from "../interfaces/tasksInterface";
+import { ITask, ITaskFilters } from "../interfaces/tasksInterface";
 
-export const createTask = async (task: ITask) => {
+export const createTask = async (task: ITask, userId: number) => {
   const result = await pool.query(
-    `INSERT INTO tasks (user_id, title, description, due_date, status, priority)
-     VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-    [
-      task.user_id,
-      task.title,
-      task.description,
-      task.due_date,
-      task.status,
-      task.priority,
-    ]
+    `INSERT INTO tasks (title, description, due_date, priority, user_id)
+     VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+    [task.title, task.description, task.due_date, task.priority, userId]
   );
   return result.rows[0];
 };
@@ -55,16 +48,12 @@ export const deleteTask = async (id: number) => {
   return result.rows[0];
 };
 
-export const getTasksByFilter = async (filters: {
-  status?: string;
-  priority?: string;
-  limit?: number;
-  offset?: number;
-  sort?: string;
-  order?: "asc" | "desc";
-}) => {
-  const conditions: string[] = [];
-  const values: any[] = [];
+export const getTasksByFilter = async (
+  filters: ITaskFilters,
+  userId: number
+) => {
+  const conditions: string[] = ["user_id = $1"];
+  const values: any[] = [userId];
 
   if (filters.status) {
     conditions.push(`status = $${values.length + 1}`);
@@ -76,9 +65,14 @@ export const getTasksByFilter = async (filters: {
     values.push(filters.priority);
   }
 
-  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  if (filters.search) {
+    conditions.push(`title ILIKE $${values.length + 1}`);
+    values.push(`%${filters.search}%`);
+  }
+
+  const where = `WHERE ${conditions.join(" AND ")}`;
   const sortBy = filters.sort ?? "created_at";
-  const sortOrder = filters.order?.toLowerCase() === "asc" ? "ASC" : "DESC";
+  const sortOrder = filters.order === "asc" ? "ASC" : "DESC";
   const limit = filters.limit ?? 10;
   const offset = filters.offset ?? 0;
 
@@ -96,12 +90,12 @@ export const getTasksByFilter = async (filters: {
   return result.rows;
 };
 
-export const getTaskCount = async (filters: {
-  status?: string;
-  priority?: string;
-}) => {
-  const conditions: string[] = [];
-  const values: any[] = [];
+export const getTaskCount = async (
+  filters: Partial<ITaskFilters>,
+  userId: number
+) => {
+  const conditions: string[] = ["user_id = $1"];
+  const values: any[] = [userId];
 
   if (filters.status) {
     conditions.push(`status = $${values.length + 1}`);
@@ -113,7 +107,12 @@ export const getTaskCount = async (filters: {
     values.push(filters.priority);
   }
 
-  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  if (filters.search) {
+    conditions.push(`title ILIKE $${values.length + 1}`);
+    values.push(`%${filters.search}%`);
+  }
+
+  const where = `WHERE ${conditions.join(" AND ")}`;
   const query = `SELECT COUNT(*) FROM tasks ${where}`;
   const result = await pool.query(query, values);
   return parseInt(result.rows[0].count, 10);
