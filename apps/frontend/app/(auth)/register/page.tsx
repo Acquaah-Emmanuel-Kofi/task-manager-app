@@ -17,6 +17,8 @@ import api from "@/lib/axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { hanldeApiError } from "@/lib/utils";
+import { useState } from "react";
+import { Icons } from "@/lib/icons";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -25,6 +27,9 @@ const registerSchema = z.object({
 });
 
 export default function RegisterPage() {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -34,10 +39,9 @@ export default function RegisterPage() {
     },
   });
 
-  const router = useRouter();
-
   const onSubmit = async (values: z.infer<typeof registerSchema>) => {
     try {
+      setIsLoading(true);
       const { data } = await api.post("/auth/register", values);
 
       alert("Registration successful");
@@ -45,6 +49,8 @@ export default function RegisterPage() {
       router.push("/dashboard");
     } catch (err: unknown) {
       hanldeApiError(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,8 +98,15 @@ export default function RegisterPage() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full cursor-pointer">
-            Register
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full cursor-pointer"
+          >
+            {isLoading && (
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {isLoading ? "Registering..." : "Register"}
           </Button>
         </form>
       </Form>
