@@ -6,15 +6,13 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.headers.authorization;
+  const token = req.cookies?.token;
 
-  if (!authHeader?.startsWith("Bearer ")) {
-    res.status(401).json({ message: "Missing or invalid token" });
-    return;
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized user" });
   }
 
   try {
-    const token = authHeader.split(" ")[1];
     const payload = verifyToken(token);
     (req as any).user = payload;
     next();

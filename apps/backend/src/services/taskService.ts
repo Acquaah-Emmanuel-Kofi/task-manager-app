@@ -1,11 +1,11 @@
 import pool from "../config/db";
 import { ITask, ITaskFilters } from "../models/tasksModel";
 
-export const createTask = async (task: ITask, userId: number) => {
+export const createTask = async (task: ITask) => {
   const result = await pool.query(
     `INSERT INTO tasks (title, description, due_date, priority, user_id)
      VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-    [task.title, task.description, task.due_date, task.priority, userId]
+    [task.title, task.description, task.due_date, task.priority, task.user_id]
   );
   return result.rows[0];
 };
