@@ -6,7 +6,7 @@ export interface ITask {
   user_id: number;
   title: string;
   description?: string;
-  due_date: string;
+  due_date?: Date;
   status: ITaskStatus;
   priority: ITaskPriority;
   created_at: string;
