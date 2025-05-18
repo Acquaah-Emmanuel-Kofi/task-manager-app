@@ -7,6 +7,9 @@ import { AxiosError } from "axios";
 export function getApiErrorMessage(error: unknown): string {
   if (error && typeof error === "object" && "response" in error) {
     const axiosError = error as AxiosError<ApiError>;
+
+    if (axiosError.response?.status === 401) return "Session expired";
+
     return axiosError.response?.data?.message || "Something went wrong";
   }
 

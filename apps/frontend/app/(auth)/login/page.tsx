@@ -18,7 +18,9 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { hanldeApiError } from "@/lib/utils";
 import { Icons } from "@/lib/icons";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
+import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
 
 const registerSchema = z.object({
   email: z.string().min(1, "Email is required"),
@@ -28,6 +30,7 @@ const registerSchema = z.object({
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
+  const { isAuthenticated, loading } = useAuth();
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -37,12 +40,22 @@ export default function LoginPage() {
     },
   });
 
+  useLayoutEffect(() => {
+    if (!loading && isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [loading, isAuthenticated, router]);
+
+  if (loading) return null;
+
   const onSubmit = async (values: z.infer<typeof registerSchema>) => {
     try {
       setIsLoading(true);
       const { data } = await api.post("/auth/login", values);
 
-      alert("Login successful");
+      toast("Success", {
+        description: "Login successful!",
+      });
       Cookies.set("token", data.token);
       router.push("/dashboard");
     } catch (err: unknown) {
