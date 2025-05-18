@@ -65,6 +65,19 @@ export default function DashboardPage() {
     }
   };
 
+  const handleTaskDeletion = async (id: number) => {
+    try {
+      await api.delete(`/tasks/${id}`);
+
+      refetch();
+      toast("Success", {
+        description: "Task deleted successfully!",
+      });
+    } catch (err) {
+      hanldeApiError(err);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto py-10 space-y-4">
       <div className="flex justify-between items-center">
@@ -122,19 +135,37 @@ export default function DashboardPage() {
                 </p>
               </div>
 
-              <Badge
-                className="pointer-events-none"
-                variant={task.status === "completed" ? "default" : "outline"}
-              >
-                {task.status}
-              </Badge>
+              <div className="flex gap-2">
+                <Badge
+                  className="pointer-events-none"
+                  variant={task.status === "completed" ? "default" : "outline"}
+                >
+                  {task.status}
+                </Badge>
+                <Badge
+                  className="pointer-events-none"
+                  variant={task.priority === "high" ? "default" : "outline"}
+                >
+                  {task.priority}
+                </Badge>
+              </div>
 
-              <Button
-                onClick={() => setEditingTask(task)}
-                className="cursor-pointer"
-              >
-                Edit
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setEditingTask(task)}
+                  className="cursor-pointer"
+                >
+                  Edit
+                </Button>
+
+                <Button
+                  onClick={() => handleTaskDeletion(task.id)}
+                  className="cursor-pointer"
+                  variant="destructive"
+                >
+                  Delete
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
