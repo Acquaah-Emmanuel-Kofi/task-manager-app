@@ -61,7 +61,7 @@ export default function RootLayout({
           <AuthProvider>
             <Navbar />
 
-            <main className="p-4 max-w-3xl mx-auto">{children}</main>
+            <main>{children}</main>
 
             <Toaster />
           </AuthProvider>
