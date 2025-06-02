@@ -27,6 +27,20 @@ import {
 } from "@/components/ui/dialog";
 import { TaskForm } from "./task-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
+type TaskMutationInput =
+  | { type: "update"; task: TaskFormData; row: ITask }
+  | { type: "delete"; id: number };
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
@@ -37,40 +51,52 @@ export function DataTableRowActions<TData>({
 }: DataTableRowActionsProps<TData>) {
   const queryClient = useQueryClient();
 
-  const [open, setOpen] = useState<boolean>(false);
+  const [openDialog, setOpenDialog] = useState<"edit" | "delete" | null>(null);
 
   const { reset } = useForm<TaskFormData>({
     resolver: zodResolver(taskSchema),
   });
 
-  const handleTaskUpdation = async (updatedTask: TaskFormData) => {
-    const taskId = (row.original as ITask).id;
-    const { data } = await api.put(`/tasks/${taskId}`, {
-      ...updatedTask,
-      id: taskId,
-    });
-    return data.data;
+  const handleTaskMutation = async (input: TaskMutationInput) => {
+    if (input.type === "update") {
+      const taskId = input.row.id;
+      const { data } = await api.put(`/tasks/${taskId}`, {
+        ...input.task,
+        id: taskId,
+      });
+      return data.data;
+    }
+
+    if (input.type === "delete") {
+      const { data } = await api.delete(`/tasks/${input.id}`);
+      return data.data;
+    }
   };
 
   const mutation = useMutation({
-    mutationFn: handleTaskUpdation,
-    onSuccess: () => {
-      handleSuccessResponse();
+    mutationFn: handleTaskMutation,
+    onSuccess: (_data, input) => {
+      handleSuccessResponse(input.type);
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 
-  const handleSuccessResponse = () => {
+  const handleSuccessResponse = (type: "update" | "delete") => {
     reset();
-    setOpen(false);
+    setOpenDialog(null);
     toast("Success", {
-      description: "Task updated successfully!",
+      description: `Task ${
+        type === "update" ? "updated" : "deleted"
+      } successfully!`,
     });
   };
 
   return (
     <Fragment>
-      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && setOpen(false)}>
+      <Dialog
+        open={openDialog === "edit"}
+        onOpenChange={() => setOpenDialog(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Update Task</DialogTitle>
@@ -78,12 +104,46 @@ export function DataTableRowActions<TData>({
           <TaskForm
             initialValues={row.original as ITask}
             submitLabel="Update"
-            onSubmit={async (data: TaskFormData) =>
-              await mutation.mutateAsync(data)
+            onSubmit={async (updatedTask: TaskFormData) =>
+              await mutation.mutateAsync({
+                type: "update",
+                row: row.original as ITask,
+                task: updatedTask,
+              })
             }
           />
         </DialogContent>
       </Dialog>
+
+      <AlertDialog
+        open={openDialog === "delete"}
+        onOpenChange={() => setOpenDialog(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this task?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The task will be permanently removed
+              from your list.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () =>
+                await mutation.mutateAsync({
+                  type: "delete",
+                  id: (row.original as ITask).id,
+                })
+              }
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -98,7 +158,7 @@ export function DataTableRowActions<TData>({
         <DropdownMenuContent align="end" className="w-[160px]">
           <DropdownMenuItem
             className="cursor-pointer"
-            onClick={() => setOpen(true)}
+            onClick={() => setOpenDialog("edit")}
           >
             Edit
           </DropdownMenuItem>
@@ -106,7 +166,10 @@ export function DataTableRowActions<TData>({
             Favorite
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="cursor-pointer">
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => setOpenDialog("delete")}
+          >
             Delete
             <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
           </DropdownMenuItem>
