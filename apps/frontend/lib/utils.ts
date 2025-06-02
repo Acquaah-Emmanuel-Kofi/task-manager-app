@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function hanldeApiError(error: unknown) {
+export function handleApiError(error: unknown) {
   const message = getApiErrorMessage(error);
   console.log("Error: ", message);
   toast("Error", {
