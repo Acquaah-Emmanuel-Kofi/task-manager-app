@@ -16,7 +16,7 @@ import {
 import api from "@/lib/axios";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
-import { hanldeApiError } from "@/lib/utils";
+import { handleApiError } from "@/lib/utils";
 import { useLayoutEffect, useState } from "react";
 import { Icons } from "@/lib/icons";
 import { toast } from "sonner";
@@ -61,7 +61,7 @@ export default function RegisterPage() {
       Cookies.set("token", data.token);
       router.push("/dashboard");
     } catch (err: unknown) {
-      hanldeApiError(err);
+      handleApiError(err);
     } finally {
       setIsLoading(false);
     }
