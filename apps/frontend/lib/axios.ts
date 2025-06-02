@@ -1,6 +1,5 @@
 import axios from "axios";
 import Cookies from "js-cookie";
-import router from "next/router";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -21,10 +20,6 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       Cookies.remove("token");
-      router.push({
-        pathname: "/login",
-        query: { expired: "1" },
-      });
     }
     return Promise.reject(error);
   }
