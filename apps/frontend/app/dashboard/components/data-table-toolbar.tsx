@@ -8,6 +8,21 @@ import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DataTableViewOptions } from "./data-table-view-options";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { TaskForm } from "./task-form";
+import { useState } from "react";
+import api from "@/lib/axios";
+import { useForm } from "react-hook-form";
+import { TaskFormData, taskSchema } from "@/schemas/taskSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -16,7 +31,35 @@ interface DataTableToolbarProps<TData> {
 export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
+  const queryClient = useQueryClient();
+
   const isFiltered = table.getState().columnFilters.length > 0;
+  const [open, setOpen] = useState<boolean>(false);
+
+  const { reset } = useForm<TaskFormData>({
+    resolver: zodResolver(taskSchema),
+  });
+
+  const handleTaskCreation = async (newTask: TaskFormData) => {
+    const { data } = await api.post("/tasks", newTask);
+    return data.data;
+  };
+
+  const mutation = useMutation({
+    mutationFn: handleTaskCreation,
+    onSuccess: () => {
+      handleSuccessResponse();
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
+
+  const handleSuccessResponse = () => {
+    reset();
+    setOpen(false);
+    toast("Success", {
+      description: "Task created successfully!",
+    });
+  };
 
   return (
     <div className="flex items-center justify-between">
@@ -55,13 +98,28 @@ export function DataTableToolbar<TData>({
         )}
       </div>
       <DataTableViewOptions table={table} />
-      <Button
-        type="button"
-        size="sm"
-        className="ml-2 hidden h-8 lg:flex cursor-pointer"
-      >
-        Add Task
-      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Button
+            type="button"
+            size="sm"
+            className="ml-2 hidden h-8 lg:flex cursor-pointer"
+          >
+            + New Task
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Task</DialogTitle>
+          </DialogHeader>
+          <TaskForm
+            onSubmit={async (data: TaskFormData) =>
+              await mutation.mutateAsync(data)
+            }
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
