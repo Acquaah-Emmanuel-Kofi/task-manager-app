@@ -90,6 +90,9 @@ export function TaskForm(props: TaskFormProps) {
       <div>
         <Label className="mb-2">Description</Label>
         <Textarea {...register("description")} />
+        {errors.description && (
+          <p className="text-red-500 text-sm">{errors.description.message}</p>
+        )}
       </div>
 
       <div className="flex gap-2 justify-between w-full">
