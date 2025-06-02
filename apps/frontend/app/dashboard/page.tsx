@@ -18,19 +18,6 @@ export default function DashboardPage() {
 function Tasks() {
   const { data: tasks, isLoading, error } = useTasks();
 
-  // const handleTaskDeletion = async (id: number) => {
-  //   try {
-  //     await api.delete(`/tasks/${id}`);
-
-  //     refetch();
-  //     toast("Success", {
-  //       description: "Task deleted successfully!",
-  //     });
-  //   } catch (err) {
-  //     handleApiError(err);
-  //   }
-  // };
-
   if (error) return <div>Something went wrong. {error.message}</div>;
 
   return (
@@ -48,15 +35,7 @@ function Tasks() {
           </div> */}
         </div>
         {tasks && tasks?.length > 0 && (
-          <DataTable
-            data={tasks.map((task) => ({
-              ...task,
-              id: String(task.id),
-              description: task.description ?? "No description",
-            }))}
-            columns={columns}
-            loading={isLoading}
-          />
+          <DataTable data={tasks} columns={columns} loading={isLoading} />
         )}
       </div>
     </>
