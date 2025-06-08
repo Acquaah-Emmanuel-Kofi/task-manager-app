@@ -4,14 +4,20 @@ import { useTasks } from "@/hooks/useTasks";
 import { DataTable } from "./components/data-table";
 import { columns } from "./components/columns";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const queryClient = new QueryClient();
 
 export default function DashboardPage() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Tasks />
+      {isMounted && <Tasks />}
     </QueryClientProvider>
   );
 }
