@@ -10,5 +10,6 @@ export const useTasks = () => {
       const { data }: ApiResponse<ITaskResponse> = await api.get("/tasks");
       return data.data;
     },
+    enabled: false,
   });
 };
